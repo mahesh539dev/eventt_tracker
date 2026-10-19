@@ -6,14 +6,22 @@ import { createPool, runMigrations } from '../../src/db.js';
 
 const PASSWORD = 'correct-horse-battery-staple';
 
+const DEFAULT_TEST_DATABASE_URL = 'postgres://events:events@localhost:5433/events_test';
+
 export async function buildTestApp(opts: BuildOptions = {}) {
+  const databaseUrl = process.env.DATABASE_URL ?? DEFAULT_TEST_DATABASE_URL;
+  if (!/\/[^/?]*test[^/?]*(\?|$)/i.test(databaseUrl)) {
+    throw new Error(
+      `Refusing to run tests against a database that doesn't look like a test database: ${databaseUrl}. The database name must contain "test".`,
+    );
+  }
   const config = loadConfig({
     NODE_ENV: 'test',
-    DATABASE_URL: process.env.DATABASE_URL ?? 'postgres://events:events@localhost:5433/events_test',
+    DATABASE_URL: databaseUrl,
     SESSION_SECRET: 'x'.repeat(32),
     APP_PASSWORD_HASH: await hashPassword(PASSWORD),
   });
-  const pool: pg.Pool = createPool(config.DATABASE_URL);
+  const pool: pg.Pool = createPool(databaseUrl);
   await runMigrations(pool);
   await pool.query('TRUNCATE TABLE events_expenses, events');
 

@@ -1,6 +1,6 @@
 import { addExpense, createEvent, deleteExpense, getEvent, updateEvent, updateExpense } from '../api.js';
 import { formatCents, parseToCents } from '../money.js';
-import { qs, toast } from '../ui.js';
+import { esc, qs, toast } from '../ui.js';
 import { renderEventList } from './eventList.js';
 
 export async function renderEventForm(container, eventId) {
@@ -9,10 +9,10 @@ export async function renderEventForm(container, eventId) {
   container.innerHTML = `
     <form id="event-form" class="card">
       <button type="button" id="back">&larr; Back</button>
-      <label>Customer name<input name="customerName" required value="${event?.customerName ?? ''}" /></label>
-      <label>Phone<input name="customerPhone" value="${event?.customerPhone ?? ''}" /></label>
+      <label>Customer name<input name="customerName" required value="${esc(event?.customerName ?? '')}" /></label>
+      <label>Phone<input name="customerPhone" value="${esc(event?.customerPhone ?? '')}" /></label>
       <label>Event date<input type="date" name="eventDate" required value="${event?.eventDate ?? ''}" /></label>
-      <label>Event type<input name="eventType" required value="${event?.eventType ?? ''}" /></label>
+      <label>Event type<input name="eventType" required value="${esc(event?.eventType ?? '')}" /></label>
       <label>Decor style
         <select name="decorStyle" required>
           ${['indian_traditional', 'balloon', 'both']
@@ -44,7 +44,7 @@ export async function renderEventForm(container, eventId) {
         </label>`
           : ''
       }
-      <label>Notes<textarea name="notes">${event?.notes ?? ''}</textarea></label>
+      <label>Notes<textarea name="notes">${esc(event?.notes ?? '')}</textarea></label>
       <button type="submit">${event ? 'Save' : 'Create'}</button>
     </form>
     ${event ? '<div id="expenses" class="card"></div>' : ''}
@@ -57,9 +57,13 @@ export async function renderEventForm(container, eventId) {
     const resetBtn = qs('#reset-status', container);
     if (resetBtn) {
       resetBtn.addEventListener('click', async () => {
-        await updateEvent(event.id, { resetStatusToAutomatic: true });
-        toast('Status reset to automatic');
-        renderEventForm(container, event.id);
+        try {
+          await updateEvent(event.id, { resetStatusToAutomatic: true });
+          toast('Status reset to automatic');
+          renderEventForm(container, event.id);
+        } catch (err) {
+          toast(err.message);
+        }
       });
     }
   }
@@ -81,7 +85,10 @@ export async function renderEventForm(container, eventId) {
       restPaidOn: form.get('restPaidOn') || null,
       notes: form.get('notes'),
     };
-    if (event) payload.status = form.get('status');
+    if (event) {
+      const newStatus = form.get('status');
+      if (newStatus !== event.status) payload.status = newStatus;
+    }
     try {
       if (event) {
         await updateEvent(event.id, payload);
@@ -104,7 +111,7 @@ function renderExpenses(el, event) {
     <ul id="expense-list">
       ${event.expenses
         .map(
-          (x) => `<li data-id="${x.id}">${x.spentOn} — ${formatCents(x.amountCents)} — ${x.note}
+          (x) => `<li data-id="${x.id}">${x.spentOn} — ${formatCents(x.amountCents)} — ${esc(x.note)}
           <button class="delete-expense">x</button></li>`,
         )
         .join('')}
@@ -121,21 +128,29 @@ function renderExpenses(el, event) {
   el.querySelectorAll('.delete-expense').forEach((btn) => {
     btn.addEventListener('click', async (e) => {
       const id = e.target.closest('li').dataset.id;
-      await deleteExpense(event.id, id);
-      const refreshed = await (await import('../api.js')).getEvent(event.id);
-      renderExpenses(el, refreshed);
+      try {
+        await deleteExpense(event.id, id);
+        const refreshed = await (await import('../api.js')).getEvent(event.id);
+        renderExpenses(el, refreshed);
+      } catch (err) {
+        toast(err.message);
+      }
     });
   });
 
   qs('#expense-form', el).addEventListener('submit', async (e) => {
     e.preventDefault();
     const form = new FormData(e.target);
-    await addExpense(event.id, {
-      amountCents: parseToCents(form.get('amount')),
-      note: form.get('note') || '',
-      spentOn: form.get('spentOn'),
-    });
-    const refreshed = await (await import('../api.js')).getEvent(event.id);
-    renderExpenses(el, refreshed);
+    try {
+      await addExpense(event.id, {
+        amountCents: parseToCents(form.get('amount')),
+        note: form.get('note') || '',
+        spentOn: form.get('spentOn'),
+      });
+      const refreshed = await (await import('../api.js')).getEvent(event.id);
+      renderExpenses(el, refreshed);
+    } catch (err) {
+      toast(err.message);
+    }
   });
 }

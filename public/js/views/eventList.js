@@ -1,6 +1,6 @@
 import { deleteEvent, listEvents } from '../api.js';
 import { formatCents } from '../money.js';
-import { qs, toast } from '../ui.js';
+import { esc, qs, toast } from '../ui.js';
 import { renderEventForm } from './eventForm.js';
 
 export async function renderEventList(container) {
@@ -26,8 +26,8 @@ export async function renderEventList(container) {
       .map(
         (e) => `
       <div class="card" data-id="${e.id}">
-        <strong>${e.customerName}</strong> — ${e.eventDate}<br/>
-        ${e.eventType} · ${e.jobType} · ${e.decorStyle}<br/>
+        <strong>${esc(e.customerName)}</strong> — ${e.eventDate}<br/>
+        ${esc(e.eventType)} · ${e.jobType} · ${e.decorStyle}<br/>
         Price: ${formatCents(e.priceCents)} | Due: ${formatCents(e.dueCents)}
         <span class="pill ${e.status}">${e.status}</span>
         <button class="open">Open</button>
@@ -41,9 +41,13 @@ export async function renderEventList(container) {
       card.querySelector('.open').addEventListener('click', () => renderEventForm(container, id));
       card.querySelector('.delete').addEventListener('click', async () => {
         if (!confirm('Delete this event?')) return;
-        await deleteEvent(id);
-        toast('Event deleted');
-        load();
+        try {
+          await deleteEvent(id);
+          toast('Event deleted');
+          load();
+        } catch (err) {
+          toast(err.message);
+        }
       });
     });
   }

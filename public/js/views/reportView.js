@@ -1,7 +1,7 @@
 import { getReport } from '../api.js';
 import { currentMonthStr } from '../dates.js';
 import { formatCents } from '../money.js';
-import { qs } from '../ui.js';
+import { esc, qs } from '../ui.js';
 
 export async function renderReportView(container) {
   container.innerHTML = `
@@ -36,7 +36,7 @@ export async function renderReportView(container) {
 
   function renderReport(el, report) {
     const row = (label, b) => `
-      <tr><td>${label}</td><td>${formatCents(b.revenueCents)}</td><td>${formatCents(b.collectedCents)}</td><td>${formatCents(b.expensesCents)}</td><td>${formatCents(b.profitCents)}</td></tr>`;
+      <tr><td>${esc(label)}</td><td>${formatCents(b.revenueCents)}</td><td>${formatCents(b.collectedCents)}</td><td>${formatCents(b.expensesCents)}</td><td>${formatCents(b.profitCents)}</td></tr>`;
 
     el.innerHTML = `
       <div class="card">
@@ -64,7 +64,7 @@ export async function renderReportView(container) {
       <div class="card">
         <h3>Events (${report.events.length})</h3>
         <ul>
-          ${report.events.map((e) => `<li>${e.eventDate} — ${e.customerName} — ${formatCents(e.priceCents)} — <span class="pill ${e.status}">${e.status}</span></li>`).join('')}
+          ${report.events.map((e) => `<li>${e.eventDate} — ${esc(e.customerName)} — ${formatCents(e.priceCents)} — <span class="pill ${e.status}">${e.status}</span></li>`).join('')}
         </ul>
       </div>
     `;

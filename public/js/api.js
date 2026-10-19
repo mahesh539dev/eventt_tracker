@@ -22,6 +22,7 @@ async function request(method, path, body) {
 
 export const login = (password) => request('POST', '/api/auth/login', { password });
 export const logout = () => request('POST', '/api/auth/logout');
+export const checkAuth = () => request('GET', '/api/auth/me');
 
 export const listEvents = (filters = {}) => {
   const params = new URLSearchParams(filters);

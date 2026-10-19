@@ -22,10 +22,23 @@ export interface BuildOptions {
   today?: () => string;
 }
 
+/** Builds the production "today" resolver: current date in `timezone`, formatted as YYYY-MM-DD. Exported for testing. */
+export function makeTodayResolver(timezone: string): () => string {
+  return () => {
+    const parts = new Intl.DateTimeFormat('en-CA', { timeZone: timezone }).formatToParts(new Date());
+    const get = (type: string) => parts.find((p) => p.type === type)?.value ?? '';
+    return `${get('year')}-${get('month')}-${get('day')}`;
+  };
+}
+
 export async function buildApp(config: Config, pool: pg.Pool, opts: BuildOptions = {}): Promise<FastifyInstance> {
   const logger = opts.logger ?? config.NODE_ENV !== 'test';
   const app = Fastify({
-    trustProxy: true,
+    // Trust exactly one hop (Railway's edge proxy) for X-Forwarded-* headers; further-forwarded
+    // values are ignored, closing the IP-spoofing bypass that `trustProxy: true` would allow.
+    // Fastify supports a numeric hop count at runtime (lib/request.js), but its published types
+    // don't include `number` in the `trustProxy` union, hence the cast.
+    trustProxy: 1 as unknown as boolean,
     logger: logger
       ? { level: 'info', redact: ['req.headers.cookie', 'req.headers.authorization', 'res.headers["set-cookie"]'] }
       : false,
@@ -71,7 +84,7 @@ export async function buildApp(config: Config, pool: pg.Pool, opts: BuildOptions
   installAuth(app, config);
   authRoutes(app, config);
   healthRoutes(app, pool);
-  const today = opts.today ?? (() => new Date().toISOString().slice(0, 10));
+  const today = opts.today ?? makeTodayResolver(config.APP_TIMEZONE);
   eventRoutes(app, pool, today);
   expenseRoutes(app, pool);
   reportRoutes(app, pool, today);

@@ -50,7 +50,8 @@ export function expenseRoutes(app: FastifyInstance, pool: pg.Pool): void {
     const eventId = uuid.parse((req.params as { id: string }).id);
     const expenseId = uuid.parse((req.params as { expenseId: string }).expenseId);
     await ensureEventExists(pool, eventId);
-    await pool.query('DELETE FROM events_expenses WHERE id = $1 AND event_id = $2', [expenseId, eventId]);
+    const res = await pool.query('DELETE FROM events_expenses WHERE id = $1 AND event_id = $2', [expenseId, eventId]);
+    if (res.rowCount === 0) throw new HttpError(404, 'not_found', 'Expense not found.');
     return reply.code(204).send();
   });
 }

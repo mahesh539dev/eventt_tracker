@@ -107,7 +107,7 @@ export const reportQuery = z
   .object({
     month: z
       .string()
-      .regex(/^\d{4}-\d{2}$/, 'month must be YYYY-MM')
+      .regex(/^\d{4}-(0[1-9]|1[0-2])$/, 'month must be YYYY-MM')
       .optional(),
     from: dateStr.optional(),
     to: dateStr.optional(),

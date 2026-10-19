@@ -135,6 +135,28 @@ describe('events routes', () => {
     expect(reread.json().status).toBe('outstanding');
   });
 
+  it('a PATCH that omits status does not mark it manual, even when other fields change', async () => {
+    const created = await app.inject({
+      method: 'POST',
+      url: '/api/events',
+      headers: { ...AUTH_HEADERS, cookie: authCookie },
+      payload: { ...validEvent, eventDate: '2026-05-01', priceCents: 10000, depositCents: 10000, depositPaidOn: '2026-04-01' },
+    });
+    expect(created.json().status).toBe('done');
+    expect(created.json().statusIsManual).toBe(false);
+    const id = created.json().id;
+
+    const res = await app.inject({
+      method: 'PATCH',
+      url: `/api/events/${id}`,
+      headers: { ...AUTH_HEADERS, cookie: authCookie },
+      payload: { customerPhone: '555-1234', notes: 'updated phone number only, no status field sent' },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json().statusIsManual).toBe(false);
+    expect(res.json().status).toBe('done');
+  });
+
   it('resets to automatic status on request', async () => {
     const created = await app.inject({
       method: 'POST',

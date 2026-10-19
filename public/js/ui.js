@@ -9,3 +9,7 @@ export function toast(message) {
 export function qs(selector, root = document) {
   return root.querySelector(selector);
 }
+
+export function esc(str) {
+  return String(str ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
