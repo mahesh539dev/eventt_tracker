@@ -1,0 +1,42 @@
+:root {
+  color-scheme: light dark;
+  --gap: 12px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  padding: var(--gap);
+  max-width: 480px;
+  margin-inline: auto;
+}
+.card {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: var(--gap);
+  margin-bottom: var(--gap);
+}
+.pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.8em;
+}
+.pill.outstanding { background: #fde68a; }
+.pill.done { background: #bbf7d0; }
+input, select, textarea, button {
+  font-size: 1rem;
+  padding: 8px;
+  width: 100%;
+  margin-bottom: var(--gap);
+}
+.toast {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 8px;
+}
