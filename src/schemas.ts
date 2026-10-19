@@ -67,13 +67,13 @@ export const eventUpdateBody = z
     decorStyle: eventFields.decorStyle.optional(),
     jobType: eventFields.jobType.optional(),
     priceCents: eventFields.priceCents.optional(),
-    depositCents: eventFields.depositCents.optional(),
+    depositCents: money('Deposit').optional(),
     depositPaidOn: eventFields.depositPaidOn,
-    restCents: eventFields.restCents.optional(),
+    restCents: money('Rest payment').optional(),
     restPaidOn: eventFields.restPaidOn,
     status: eventFields.status,
     resetStatusToAutomatic: z.boolean().optional(),
-    notes: eventFields.notes.optional(),
+    notes: z.string().trim().max(2000, 'Notes must be 2000 characters or fewer.').optional(),
   })
   .superRefine((v, ctx) => {
     if (v.depositCents !== undefined && v.depositCents > 0 && !v.depositPaidOn) {

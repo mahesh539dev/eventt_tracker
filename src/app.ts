@@ -9,6 +9,7 @@ import { installAuth } from './auth.js';
 import type { Config } from './config.js';
 import { installErrorHandling } from './errors.js';
 import { authRoutes } from './routes/auth.js';
+import { eventRoutes } from './routes/events.js';
 import { healthRoutes } from './routes/health.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -68,6 +69,8 @@ export async function buildApp(config: Config, pool: pg.Pool, opts: BuildOptions
   installAuth(app, config);
   authRoutes(app, config);
   healthRoutes(app, pool);
+  const today = opts.today ?? (() => new Date().toISOString().slice(0, 10));
+  eventRoutes(app, pool, today);
 
   await app.register(fastifyStatic, { root: path.resolve(here, '..', 'public') });
 
