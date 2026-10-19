@@ -1,4 +1,4 @@
-import { addExpense, createEvent, deleteExpense, getEvent, updateEvent, updateExpense } from '../api.js';
+import { addExpense, createEvent, deleteEvent, deleteExpense, getEvent, updateEvent, updateExpense } from '../api.js';
 import { formatCents, parseToCents } from '../money.js';
 import { esc, qs, toast } from '../ui.js';
 import { renderEventList } from './eventList.js';
@@ -46,6 +46,7 @@ export async function renderEventForm(container, eventId) {
       }
       <label>Notes<textarea name="notes">${esc(event?.notes ?? '')}</textarea></label>
       <button type="submit">${event ? 'Save' : 'Create'}</button>
+      ${event ? '<button type="button" id="delete-event" class="danger">Delete event</button>' : ''}
     </form>
     ${event ? '<div id="expenses" class="card"></div>' : ''}
   `;
@@ -54,6 +55,18 @@ export async function renderEventForm(container, eventId) {
 
   if (event) {
     renderExpenses(qs('#expenses', container), event);
+
+    qs('#delete-event', container).addEventListener('click', async () => {
+      if (!confirm('Delete this event? This cannot be undone.')) return;
+      try {
+        await deleteEvent(event.id);
+        toast('Event deleted');
+        renderEventList(container);
+      } catch (err) {
+        toast(err.message);
+      }
+    });
+
     const resetBtn = qs('#reset-status', container);
     if (resetBtn) {
       resetBtn.addEventListener('click', async () => {

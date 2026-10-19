@@ -92,7 +92,30 @@ export function eventRoutes(app: FastifyInstance, pool: pg.Pool, today: () => st
     const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
     const res = await pool.query<EventRow>(`SELECT * FROM events ${where} ORDER BY event_date ASC`, params);
     const t = today();
-    const rows = res.rows.map((r) => toResponse(r, t));
+
+    const eventIds = res.rows.map((r) => r.id);
+    const expensesByEvent = new Map<string, { amountCents: number }[]>();
+    if (eventIds.length > 0) {
+      const expensesRes = await pool.query(
+        'SELECT * FROM events_expenses WHERE event_id = ANY($1::uuid[])',
+        [eventIds],
+      );
+      for (const row of expensesRes.rows) {
+        const list = expensesByEvent.get(row.event_id) ?? [];
+        list.push(toExpenseResponse(row));
+        expensesByEvent.set(row.event_id, list);
+      }
+    }
+
+    const rows = res.rows.map((r) => {
+      const expenses = (expensesByEvent.get(r.id) ?? []).map((e) => ({ amountCents: e.amountCents }));
+      const money = { priceCents: r.price_cents, depositCents: r.deposit_cents, restCents: r.rest_cents };
+      return {
+        ...toResponse(r, t),
+        totalExpensesCents: totalExpensesCents(expenses),
+        profitCents: finalAmountCents(money, expenses),
+      };
+    });
     return q.status ? rows.filter((r) => r.status === q.status) : rows;
   });
 
