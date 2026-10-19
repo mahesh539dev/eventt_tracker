@@ -1,42 +1,472 @@
 :root {
   color-scheme: light dark;
-  --gap: 12px;
+
+  /* Spacing scale */
+  --gap: 14px;
+  --gap-sm: 8px;
+  --radius: 14px;
+  --radius-sm: 10px;
+
+  /* Brand */
+  --brand: #6d28d9;
+  --brand-strong: #5b21b6;
+  --brand-soft: #ede9fe;
+  --brand-contrast: #ffffff;
+
+  /* Surfaces & text */
+  --bg: #f5f3f8;
+  --bg-grad-a: #efeafc;
+  --bg-grad-b: #f6f4fb;
+  --surface: #ffffff;
+  --surface-2: #faf9fd;
+  --text: #1c1b22;
+  --text-muted: #6b6878;
+  --border: #e6e2ef;
+  --border-strong: #d6d0e4;
+
+  /* Status */
+  --warn-bg: #fef3c7;
+  --warn-fg: #92610a;
+  --ok-bg: #d1fae5;
+  --ok-fg: #047857;
+  --danger: #dc2626;
+  --danger-soft: #fee2e2;
+
+  --shadow-sm: 0 1px 2px rgba(23, 20, 40, 0.06), 0 1px 3px rgba(23, 20, 40, 0.05);
+  --shadow-md: 0 4px 14px rgba(43, 24, 90, 0.08), 0 2px 4px rgba(43, 24, 90, 0.05);
+
+  --focus-ring: 0 0 0 3px rgba(109, 40, 217, 0.28);
 }
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --brand: #a78bfa;
+    --brand-strong: #8b5cf6;
+    --brand-soft: #2a2140;
+    --brand-contrast: #1a1626;
+
+    --bg: #121019;
+    --bg-grad-a: #171324;
+    --bg-grad-b: #100e18;
+    --surface: #1d1a28;
+    --surface-2: #231f31;
+    --text: #ece9f5;
+    --text-muted: #9c96ad;
+    --border: #322c45;
+    --border-strong: #3f3857;
+
+    --warn-bg: #3a2f10;
+    --warn-fg: #fcd34d;
+    --ok-bg: #0f3327;
+    --ok-fg: #6ee7b7;
+    --danger: #f87171;
+    --danger-soft: #3a1d1d;
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.45);
+    --focus-ring: 0 0 0 3px rgba(167, 139, 250, 0.35);
+  }
+}
+
 * { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
 body {
   margin: 0;
-  font-family: system-ui, sans-serif;
+  min-height: 100dvh;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text);
+  background:
+    radial-gradient(1200px 600px at 100% -10%, var(--bg-grad-a), transparent 60%),
+    radial-gradient(1000px 500px at -10% 0%, var(--bg-grad-b), transparent 55%),
+    var(--bg);
+  background-attachment: fixed;
   padding: var(--gap);
-  max-width: 480px;
+  padding-bottom: calc(var(--gap) + env(safe-area-inset-bottom, 0px));
+}
+
+#app {
+  max-width: 520px;
   margin-inline: auto;
 }
+
+h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 4px;
+  text-align: center;
+}
+
+h3 {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 0 0 12px;
+}
+
+p { margin: 6px 0; }
+
+/* -------- Cards -------- */
 .card {
-  border: 1px solid #ccc;
-  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   padding: var(--gap);
   margin-bottom: var(--gap);
+  box-shadow: var(--shadow-sm);
 }
+
+/* Event list items: lift and react to touch */
+#list .card,
+#report .card { box-shadow: var(--shadow-sm); }
+
+#list .card {
+  display: block;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+}
+#list .card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-strong);
+}
+#list .card strong {
+  font-size: 1.08rem;
+  letter-spacing: -0.01em;
+}
+
+/* Structured event card */
+.ev-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.ev-meta {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  text-transform: capitalize;
+}
+.ev-money {
+  display: flex;
+  gap: 22px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+.ev-money b {
+  display: block;
+  font-size: 1.02rem;
+  color: var(--text);
+  font-weight: 700;
+}
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+.actions .open { flex: 1; }
+
+/* -------- Navigation (segmented tab bar) -------- */
+nav.card {
+  position: sticky;
+  top: var(--gap);
+  z-index: 10;
+  display: flex;
+  gap: 6px;
+  padding: 6px;
+  background: color-mix(in srgb, var(--surface) 86%, transparent);
+  backdrop-filter: saturate(1.4) blur(10px);
+  -webkit-backdrop-filter: saturate(1.4) blur(10px);
+}
+nav.card button {
+  flex: 1;
+  margin: 0;
+  width: auto;
+  padding: 10px 8px;
+  background: transparent;
+  color: var(--text-muted);
+  border: 0;
+  box-shadow: none;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+}
+nav.card button:hover {
+  background: var(--surface-2);
+  color: var(--text);
+  transform: none;
+}
+nav.card #nav-logout {
+  flex: 0 0 auto;
+  color: var(--danger);
+}
+
+/* -------- Form controls -------- */
+input, select, textarea {
+  font: inherit;
+  width: 100%;
+  padding: 11px 12px;
+  margin-bottom: var(--gap-sm);
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  transition: border-color 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+  -webkit-appearance: none;
+  appearance: none;
+}
+textarea { min-height: 90px; resize: vertical; }
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--brand);
+  box-shadow: var(--focus-ring);
+  background: var(--surface);
+}
+input:disabled, select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+input::placeholder, textarea::placeholder { color: var(--text-muted); }
+
+select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b6878' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 38px;
+}
+
+/* Labels wrap their field (text then control). Make the text a caption. */
+label {
+  display: block;
+  margin-bottom: var(--gap-sm);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+label input,
+label select,
+label textarea {
+  display: block;
+  margin-top: 5px;
+  margin-bottom: 0;
+  font-weight: 400;
+  color: var(--text);
+}
+/* Inline radio labels in reports */
+label:has(> input[type="radio"]) {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text);
+  font-weight: 500;
+  margin-right: 14px;
+}
+input[type="radio"] {
+  width: auto;
+  margin: 0;
+  accent-color: var(--brand);
+}
+
+/* -------- Buttons -------- */
+button {
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  width: auto;
+  padding: 10px 16px;
+  margin-bottom: var(--gap-sm);
+  color: var(--brand-contrast);
+  background: var(--brand);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.08s ease, background 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+  -webkit-appearance: none;
+  appearance: none;
+}
+button:hover { background: var(--brand-strong); }
+button:active { transform: translateY(1px); }
+button:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+
+/* Full-width primary actions */
+button[type="submit"],
+#new-event {
+  display: block;
+  width: 100%;
+}
+#new-event {
+  margin-bottom: var(--gap);
+  font-size: 1rem;
+}
+
+/* Secondary / ghost buttons */
+#back,
+#reset-status,
+nav.card button {
+  background: var(--surface-2);
+  color: var(--text);
+  border-color: var(--border);
+  box-shadow: none;
+}
+#back:hover,
+#reset-status:hover {
+  background: var(--brand-soft);
+  color: var(--brand-strong);
+}
+#back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: var(--gap);
+  padding: 7px 12px;
+  font-size: 0.9rem;
+}
+
+/* Row of actions inside an event card */
+#list .card .open,
+#list .card .delete {
+  margin: 0;
+  padding: 9px 16px;
+  font-size: 0.92rem;
+}
+#list .card .open {
+  background: var(--brand-soft);
+  color: var(--brand-strong);
+  box-shadow: none;
+}
+#list .card .open:hover { background: color-mix(in srgb, var(--brand-soft) 75%, var(--brand) 25%); }
+#list .card .delete,
+.delete-expense {
+  background: transparent;
+  color: var(--danger);
+  border-color: var(--border);
+  box-shadow: none;
+}
+#list .card .delete:hover,
+.delete-expense:hover {
+  background: var(--danger-soft);
+  border-color: transparent;
+}
+
+/* -------- Status pills -------- */
 .pill {
   display: inline-block;
-  padding: 2px 8px;
+  padding: 3px 11px;
   border-radius: 999px;
-  font-size: 0.8em;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: capitalize;
+  vertical-align: middle;
+  margin: 2px 0;
 }
-.pill.outstanding { background: #fde68a; }
-.pill.done { background: #bbf7d0; }
-input, select, textarea, button {
-  font-size: 1rem;
-  padding: 8px;
+.pill.outstanding { background: var(--warn-bg); color: var(--warn-fg); }
+.pill.done { background: var(--ok-bg); color: var(--ok-fg); }
+
+/* -------- Expenses list -------- */
+#expense-list {
+  list-style: none;
+  margin: 0 0 var(--gap);
+  padding: 0;
+}
+#expense-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.95rem;
+}
+#expense-list li:last-child { border-bottom: 0; }
+.delete-expense {
+  margin: 0 0 0 auto;
+  padding: 2px 10px;
+  line-height: 1.4;
+  font-weight: 700;
+  border-radius: 8px;
+}
+
+/* -------- Report lists & tables -------- */
+#report ul,
+#report li { list-style: none; }
+#report ul { margin: 0; padding: 0; }
+#report li {
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.93rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+#report li:last-child { border-bottom: 0; }
+
+table {
   width: 100%;
-  margin-bottom: var(--gap);
+  border-collapse: collapse;
+  font-size: 0.88rem;
 }
+th, td {
+  padding: 9px 8px;
+  text-align: right;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+th:first-child, td:first-child {
+  text-align: left;
+  text-transform: capitalize;
+  color: var(--text-muted);
+}
+th {
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+tr:last-child td { border-bottom: 0; }
+
+/* -------- Login screen -------- */
+#login-form {
+  margin-top: 14vh;
+  padding: 26px 22px;
+  box-shadow: var(--shadow-md);
+}
+#login-form h1 { margin-bottom: 18px; }
+
+/* -------- Toast -------- */
 .toast {
   position: fixed;
-  bottom: 16px;
+  bottom: calc(18px + env(safe-area-inset-bottom, 0px));
   left: 50%;
   transform: translateX(-50%);
-  background: #333;
+  max-width: calc(100% - 32px);
+  background: #26222f;
   color: #fff;
-  padding: 8px 16px;
-  border-radius: 8px;
+  padding: 11px 18px;
+  border-radius: 999px;
+  box-shadow: var(--shadow-md);
+  font-size: 0.92rem;
+  font-weight: 500;
+  z-index: 50;
+  animation: toast-in 0.22s ease;
+}
+@media (prefers-color-scheme: dark) {
+  .toast { background: #efeafc; color: #1a1626; }
+}
+@keyframes toast-in {
+  from { opacity: 0; transform: translate(-50%, 10px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
 }

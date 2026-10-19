@@ -26,12 +26,19 @@ export async function renderEventList(container) {
       .map(
         (e) => `
       <div class="card" data-id="${e.id}">
-        <strong>${esc(e.customerName)}</strong> — ${e.eventDate}<br/>
-        ${esc(e.eventType)} · ${e.jobType} · ${e.decorStyle}<br/>
-        Price: ${formatCents(e.priceCents)} | Due: ${formatCents(e.dueCents)}
-        <span class="pill ${e.status}">${e.status}</span>
-        <button class="open">Open</button>
-        <button class="delete">Delete</button>
+        <div class="ev-head">
+          <strong>${esc(e.customerName)}</strong>
+          <span class="pill ${e.status}">${e.status}</span>
+        </div>
+        <div class="ev-meta">${e.eventDate} · ${esc(e.eventType)} · ${e.jobType} · ${e.decorStyle}</div>
+        <div class="ev-money">
+          <span>Price <b>${formatCents(e.priceCents)}</b></span>
+          <span>Due <b>${formatCents(e.dueCents)}</b></span>
+        </div>
+        <div class="actions">
+          <button class="open">Open</button>
+          <button class="delete">Delete</button>
+        </div>
       </div>`,
       )
       .join('');
