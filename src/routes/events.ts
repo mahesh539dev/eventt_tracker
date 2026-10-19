@@ -1,8 +1,9 @@
 import type { FastifyInstance } from 'fastify';
 import type pg from 'pg';
-import { amountPaidCents, dueCents, resolveStatus } from '../compute.js';
+import { amountPaidCents, dueCents, finalAmountCents, resolveStatus, totalExpensesCents } from '../compute.js';
 import { eventCreateBody, eventListQuery, eventUpdateBody, uuid } from '../schemas.js';
 import { HttpError } from '../errors.js';
+import { toExpenseResponse } from './expenses.js';
 
 interface EventRow {
   id: string;
@@ -124,7 +125,21 @@ export function eventRoutes(app: FastifyInstance, pool: pg.Pool, today: () => st
   app.get('/api/events/:id', async (req) => {
     const id = uuid.parse((req.params as { id: string }).id);
     const row = await fetchEvent(pool, id);
-    return toResponse(row, today());
+    const expensesRes = await pool.query(
+      'SELECT * FROM events_expenses WHERE event_id = $1 ORDER BY spent_on DESC, created_at DESC',
+      [id],
+    );
+    const expenses = expensesRes.rows.map(toExpenseResponse);
+    const base = toResponse(row, today());
+    return {
+      ...base,
+      expenses,
+      totalExpensesCents: totalExpensesCents(expenses.map((e) => ({ amountCents: e.amountCents }))),
+      finalAmountCents: finalAmountCents(
+        { priceCents: row.price_cents, depositCents: row.deposit_cents, restCents: row.rest_cents },
+        expenses.map((e) => ({ amountCents: e.amountCents })),
+      ),
+    };
   });
 
   app.patch('/api/events/:id', async (req) => {
