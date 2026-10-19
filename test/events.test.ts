@@ -162,4 +162,34 @@ describe('events routes', () => {
     const get = await app.inject({ method: 'GET', url: `/api/events/${id}`, headers: { cookie: authCookie } });
     expect(get.statusCode).toBe(404);
   });
+
+  it('is outstanding when the event is dated exactly today, even if fully paid', async () => {
+    const created = await app.inject({
+      method: 'POST',
+      url: '/api/events',
+      headers: { ...AUTH_HEADERS, cookie: authCookie },
+      payload: { ...validEvent, eventDate: '2026-06-15', priceCents: 10000, depositCents: 10000, depositPaidOn: '2026-06-01' },
+    });
+    expect(created.json().status).toBe('outstanding');
+  });
+
+  it('is outstanding when due is still positive, even though the event date has passed', async () => {
+    const created = await app.inject({
+      method: 'POST',
+      url: '/api/events',
+      headers: { ...AUTH_HEADERS, cookie: authCookie },
+      payload: { ...validEvent, eventDate: '2026-05-01', priceCents: 10000, depositCents: 5000, depositPaidOn: '2026-04-01' },
+    });
+    expect(created.json().status).toBe('outstanding');
+  });
+
+  it('is done when the event date is yesterday and due is exactly zero', async () => {
+    const created = await app.inject({
+      method: 'POST',
+      url: '/api/events',
+      headers: { ...AUTH_HEADERS, cookie: authCookie },
+      payload: { ...validEvent, eventDate: '2026-06-14', priceCents: 10000, depositCents: 10000, depositPaidOn: '2026-06-01' },
+    });
+    expect(created.json().status).toBe('done');
+  });
 });
