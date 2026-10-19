@@ -74,7 +74,7 @@ export async function buildApp(config: Config, pool: pg.Pool, opts: BuildOptions
   const today = opts.today ?? (() => new Date().toISOString().slice(0, 10));
   eventRoutes(app, pool, today);
   expenseRoutes(app, pool);
-  reportRoutes(app, pool);
+  reportRoutes(app, pool, today);
 
   await app.register(fastifyStatic, { root: path.resolve(here, '..', 'public') });
 

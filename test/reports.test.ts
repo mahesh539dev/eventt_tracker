@@ -111,4 +111,31 @@ describe('reports route', () => {
     const res = await app.inject({ method: 'GET', url: '/api/reports', headers: { cookie: authCookie } });
     expect(res.statusCode).toBe(400);
   });
+
+  it('resolves event status dynamically instead of using the stale stored column', async () => {
+    // today() is injected as 2026-10-15; this event is in the past relative to it and fully paid,
+    // with status_is_manual left false (default), so the auto-resolved status must be 'done' even
+    // though the raw stored column defaults to 'outstanding' and nothing ever wrote 'done' to it.
+    await createEvent({
+      customerName: 'Paid Past Event',
+      eventDate: '2026-10-01',
+      eventType: 'Wedding',
+      decorStyle: 'indian_traditional',
+      jobType: 'service',
+      priceCents: 50000,
+      depositCents: 20000,
+      depositPaidOn: '2026-09-01',
+      restCents: 30000,
+      restPaidOn: '2026-09-15',
+    });
+
+    const res = await app.inject({ method: 'GET', url: '/api/reports?month=2026-10', headers: { cookie: authCookie } });
+    expect(res.statusCode).toBe(200);
+    const body = res.json();
+
+    const summary = body.events.find((e: { customerName: string }) => e.customerName === 'Paid Past Event');
+    expect(summary).toBeDefined();
+    expect(summary.dueCents).toBe(0);
+    expect(summary.status).toBe('done');
+  });
 });

@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import type pg from 'pg';
-import { amountPaidCents, dueCents, totalExpensesCents } from '../compute.js';
+import { amountPaidCents, dueCents, resolveStatus, totalExpensesCents } from '../compute.js';
 import { monthToRange } from '../periods.js';
 import { reportQuery } from '../schemas.js';
 import { toExpenseResponse } from './expenses.js';
@@ -23,7 +23,7 @@ function addToBucket(bucket: Bucket, revenue: number, collected: number, expense
   bucket.profitCents += collected - expenses;
 }
 
-export function reportRoutes(app: FastifyInstance, pool: pg.Pool): void {
+export function reportRoutes(app: FastifyInstance, pool: pg.Pool, today: () => string): void {
   app.get('/api/reports', async (req) => {
     const q = reportQuery.parse(req.query);
     const { from, to } = q.month ? monthToRange(q.month) : { from: q.from!, to: q.to! };
@@ -77,7 +77,13 @@ export function reportRoutes(app: FastifyInstance, pool: pg.Pool): void {
         priceCents: row.price_cents,
         amountPaidCents: collected,
         dueCents: due,
-        status: row.status,
+        status: resolveStatus({
+          eventDate: row.event_date,
+          dueCents: due,
+          today: today(),
+          storedStatus: row.status,
+          statusIsManual: row.status_is_manual,
+        }),
       });
     }
 
