@@ -167,6 +167,8 @@ p { margin: 6px 0; }
   color: var(--text);
   font-weight: 700;
 }
+.ev-money .profit.pos b { color: var(--ok-fg); }
+.ev-money .profit.neg b { color: var(--danger); }
 .actions {
   display: flex;
   gap: 10px;
@@ -298,10 +300,21 @@ button:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 
 /* Full-width primary actions */
 button[type="submit"],
-#new-event {
+#new-event,
+#delete-event {
   display: block;
   width: 100%;
 }
+
+/* Destructive action on the event detail page */
+#delete-event {
+  margin-top: 4px;
+  background: transparent;
+  color: var(--danger);
+  border-color: var(--border-strong);
+  box-shadow: none;
+}
+#delete-event:hover { background: var(--danger-soft); border-color: transparent; }
 #new-event {
   margin-bottom: var(--gap);
   font-size: 1rem;
