@@ -5,8 +5,10 @@ import fastifyStatic from '@fastify/static';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
 import type pg from 'pg';
+import { installAuth } from './auth.js';
 import type { Config } from './config.js';
 import { installErrorHandling } from './errors.js';
+import { authRoutes } from './routes/auth.js';
 import { healthRoutes } from './routes/health.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -63,6 +65,8 @@ export async function buildApp(config: Config, pool: pg.Pool, opts: BuildOptions
   });
 
   installErrorHandling(app);
+  installAuth(app, config);
+  authRoutes(app, config);
   healthRoutes(app, pool);
 
   await app.register(fastifyStatic, { root: path.resolve(here, '..', 'public') });
