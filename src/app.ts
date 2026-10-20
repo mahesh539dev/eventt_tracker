@@ -12,6 +12,7 @@ import { authRoutes } from './routes/auth.js';
 import { eventRoutes } from './routes/events.js';
 import { expenseRoutes } from './routes/expenses.js';
 import { healthRoutes } from './routes/health.js';
+import { globalExpenseRoutes } from './routes/globalExpenses.js';
 import { reportRoutes } from './routes/reports.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -87,6 +88,7 @@ export async function buildApp(config: Config, pool: pg.Pool, opts: BuildOptions
   const today = opts.today ?? makeTodayResolver(config.APP_TIMEZONE);
   eventRoutes(app, pool, today);
   expenseRoutes(app, pool);
+  globalExpenseRoutes(app, pool);
   reportRoutes(app, pool, today);
 
   await app.register(fastifyStatic, { root: path.resolve(here, '..', 'public') });

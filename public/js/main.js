@@ -1,6 +1,7 @@
 import { checkAuth, login, logout } from './api.js';
 import { qs, toast } from './ui.js';
 import { renderEventList } from './views/eventList.js';
+import { renderGlobalExpensesView } from './views/globalExpensesView.js';
 import { renderReportView } from './views/reportView.js';
 
 function renderShell() {
@@ -8,6 +9,7 @@ function renderShell() {
   app.innerHTML = `
     <nav class="card">
       <button id="nav-events">Events</button>
+      <button id="nav-expenses">Expenses</button>
       <button id="nav-reports">Reports</button>
       <button id="nav-logout">Log out</button>
     </nav>
@@ -15,6 +17,7 @@ function renderShell() {
   `;
   const screen = qs('#screen');
   qs('#nav-events').addEventListener('click', () => renderEventList(screen));
+  qs('#nav-expenses').addEventListener('click', () => renderGlobalExpensesView(screen));
   qs('#nav-reports').addEventListener('click', () => renderReportView(screen));
   qs('#nav-logout').addEventListener('click', async () => {
     try {

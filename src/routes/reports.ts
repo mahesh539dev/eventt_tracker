@@ -87,12 +87,23 @@ export function reportRoutes(app: FastifyInstance, pool: pg.Pool, today: () => s
       });
     }
 
+    const globalExpensesRes = await pool.query<{ id: string; amount_cents: number; category: string; note: string; spent_on: string }>(
+      `SELECT * FROM global_expenses WHERE spent_on >= $1 AND spent_on <= $2 ORDER BY spent_on DESC`,
+      [from, to],
+    );
+    const globalExpenses = globalExpensesRes.rows.map((r) => ({ id: r.id, amountCents: r.amount_cents, category: r.category, note: r.note, spentOn: r.spent_on }));
+    const globalExpensesCents = globalExpenses.reduce((sum, x) => sum + x.amountCents, 0);
+    totals.expensesCents += globalExpensesCents;
+    totals.profitCents -= globalExpensesCents;
+
     return {
       period: { from, to },
       totals: { ...totals, outstandingCents },
       events: eventSummaries,
       byJobType,
       byEventType,
+      globalExpenses,
+      globalExpensesCents,
     };
   });
 }
