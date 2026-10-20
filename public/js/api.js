@@ -6,7 +6,8 @@ export class ApiError extends Error {
 }
 
 async function request(method, path, body) {
-  const headers = { 'Content-Type': 'application/json' };
+  const headers = {};
+  if (body !== undefined) headers['Content-Type'] = 'application/json';
   if (method !== 'GET') headers['X-Requested-With'] = 'event-decor-tracker';
   const res = await fetch(path, {
     method,
