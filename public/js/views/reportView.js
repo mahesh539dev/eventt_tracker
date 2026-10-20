@@ -67,6 +67,14 @@ export async function renderReportView(container) {
           ${report.events.map((e) => `<li>${e.eventDate} — ${esc(e.customerName)} — ${formatCents(e.priceCents)} — <span class="pill ${e.status}">${e.status}</span></li>`).join('')}
         </ul>
       </div>
+      ${report.globalExpenses && report.globalExpenses.length ? `
+      <div class="card">
+        <h3>Global expenses (${report.globalExpenses.length})</h3>
+        <ul>
+          ${report.globalExpenses.map((x) => `<li><span class="pill done" style="font-size:0.72rem;padding:2px 8px">${esc(x.category)}</span> ${x.spentOn} — ${formatCents(x.amountCents)}${x.note ? ` — ${esc(x.note)}` : ''}</li>`).join('')}
+        </ul>
+        <p style="font-weight:700">Total: ${formatCents(report.globalExpensesCents)}</p>
+      </div>` : ''}
     `;
   }
 

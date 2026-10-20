@@ -103,6 +103,19 @@ export const expenseBody = z.object({
   spentOn: dateStr,
 });
 
+export const GLOBAL_EXPENSE_CATEGORIES = ['transport', 'materials', 'labour', 'utilities', 'marketing', 'other'] as const;
+
+export const globalExpenseBody = z.object({
+  amountCents: z
+    .number({ error: 'Amount must be greater than zero.' })
+    .int('Amount must be a whole number of cents.')
+    .min(1, 'Amount must be greater than zero.')
+    .max(MAX_CENTS, 'Amount is too large.'),
+  category: z.enum(GLOBAL_EXPENSE_CATEGORIES, { error: 'Pick a category.' }),
+  note: z.string().trim().max(200, 'Note must be 200 characters or fewer.').default(''),
+  spentOn: dateStr,
+});
+
 export const reportQuery = z
   .object({
     month: z

@@ -38,6 +38,14 @@ export const updateExpense = (eventId, expenseId, data) =>
   request('PATCH', `/api/events/${eventId}/expenses/${expenseId}`, data);
 export const deleteExpense = (eventId, expenseId) => request('DELETE', `/api/events/${eventId}/expenses/${expenseId}`);
 
+export const listGlobalExpenses = (filters = {}) => {
+  const params = new URLSearchParams(filters);
+  return request('GET', `/api/global-expenses?${params.toString()}`);
+};
+export const addGlobalExpense = (data) => request('POST', '/api/global-expenses', data);
+export const updateGlobalExpense = (id, data) => request('PATCH', `/api/global-expenses/${id}`, data);
+export const deleteGlobalExpense = (id) => request('DELETE', `/api/global-expenses/${id}`);
+
 export const getReport = (query) => {
   const params = new URLSearchParams(query);
   return request('GET', `/api/reports?${params.toString()}`);
