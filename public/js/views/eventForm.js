@@ -31,7 +31,7 @@ export async function renderEventForm(container, eventId) {
       <label>Deposit amount<input name="deposit" type="number" step="0.01" value="${event ? event.depositCents / 100 : ''}" /></label>
       <label>Deposit paid on<input type="date" name="depositPaidOn" value="${event?.depositPaidOn ?? ''}" /></label>
       <label>Rest amount<input name="rest" type="number" step="0.01" value="${event ? event.restCents / 100 : ''}" /></label>
-      <label>Rest paid on<input type="date" name="restPaidOn" value="${event?.restPaidOn ?? ''}" /></label>
+      <label>Due paid on<input type="date" name="duePaidOn" value="${event?.duePaidOn ?? ''}" /></label>
       ${event ? `<p>Due: ${formatCents(event.dueCents)}</p>` : ''}
       ${
         event
@@ -44,6 +44,8 @@ export async function renderEventForm(container, eventId) {
         </label>`
           : ''
       }
+      <label>Address<input name="address" value="${esc(event?.address ?? '')}" /></label>
+      <label>Timings<input name="timings" value="${esc(event?.timings ?? '')}" /></label>
       <label>Notes<textarea name="notes">${esc(event?.notes ?? '')}</textarea></label>
       <button type="submit">${event ? 'Save' : 'Create'}</button>
       ${event ? '<button type="button" id="delete-event" class="danger">Delete event</button>' : ''}
@@ -95,7 +97,9 @@ export async function renderEventForm(container, eventId) {
       depositCents: parseToCents(form.get('deposit') || '0'),
       depositPaidOn: form.get('depositPaidOn') || null,
       restCents: parseToCents(form.get('rest') || '0'),
-      restPaidOn: form.get('restPaidOn') || null,
+      duePaidOn: form.get('duePaidOn') || null,
+      address: form.get('address') || null,
+      timings: form.get('timings') || null,
       notes: form.get('notes'),
     };
     if (event) {
