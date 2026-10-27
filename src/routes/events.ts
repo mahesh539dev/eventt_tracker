@@ -17,10 +17,12 @@ interface EventRow {
   deposit_cents: number;
   deposit_paid_on: string | null;
   rest_cents: number;
-  rest_paid_on: string | null;
+  due_paid_on: string | null;
   status: 'outstanding' | 'done';
   status_is_manual: boolean;
   notes: string;
+  address: string | null;
+  timings: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -47,12 +49,14 @@ function toResponse(row: EventRow, today: string) {
     depositCents: row.deposit_cents,
     depositPaidOn: row.deposit_paid_on,
     restCents: row.rest_cents,
-    restPaidOn: row.rest_paid_on,
+    duePaidOn: row.due_paid_on,
     amountPaidCents: amountPaidCents(money),
     dueCents: due,
     status,
     statusIsManual: row.status_is_manual,
     notes: row.notes,
+    address: row.address,
+    timings: row.timings,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -124,8 +128,9 @@ export function eventRoutes(app: FastifyInstance, pool: pg.Pool, today: () => st
     const res = await pool.query<EventRow>(
       `INSERT INTO events
         (customer_name, customer_phone, event_date, event_type, decor_style, job_type,
-         price_cents, deposit_cents, deposit_paid_on, rest_cents, rest_paid_on, notes)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+         price_cents, deposit_cents, deposit_paid_on, rest_cents, due_paid_on, notes,
+         address, timings)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
        RETURNING *`,
       [
         body.customerName,
@@ -138,8 +143,10 @@ export function eventRoutes(app: FastifyInstance, pool: pg.Pool, today: () => st
         body.depositCents,
         body.depositPaidOn ?? null,
         body.restCents,
-        body.restPaidOn ?? null,
+        body.duePaidOn ?? null,
         body.notes,
+        body.address ?? null,
+        body.timings ?? null,
       ],
     );
     return reply.code(201).send(toResponse(res.rows[0], today()));
@@ -181,8 +188,10 @@ export function eventRoutes(app: FastifyInstance, pool: pg.Pool, today: () => st
       deposit_cents: body.depositCents ?? existing.deposit_cents,
       deposit_paid_on: body.depositPaidOn !== undefined ? body.depositPaidOn : existing.deposit_paid_on,
       rest_cents: body.restCents ?? existing.rest_cents,
-      rest_paid_on: body.restPaidOn !== undefined ? body.restPaidOn : existing.rest_paid_on,
+      due_paid_on: body.duePaidOn !== undefined ? body.duePaidOn : existing.due_paid_on,
       notes: body.notes ?? existing.notes,
+      address: body.address !== undefined ? body.address : existing.address,
+      timings: body.timings !== undefined ? body.timings : existing.timings,
       status: existing.status,
       status_is_manual: existing.status_is_manual,
     };
@@ -197,9 +206,9 @@ export function eventRoutes(app: FastifyInstance, pool: pg.Pool, today: () => st
     const res = await pool.query<EventRow>(
       `UPDATE events SET
         customer_name=$1, customer_phone=$2, event_date=$3, event_type=$4, decor_style=$5, job_type=$6,
-        price_cents=$7, deposit_cents=$8, deposit_paid_on=$9, rest_cents=$10, rest_paid_on=$11,
-        notes=$12, status=$13, status_is_manual=$14, updated_at=now()
-       WHERE id=$15
+        price_cents=$7, deposit_cents=$8, deposit_paid_on=$9, rest_cents=$10, due_paid_on=$11,
+        notes=$12, status=$13, status_is_manual=$14, address=$15, timings=$16, updated_at=now()
+       WHERE id=$17
        RETURNING *`,
       [
         next.customer_name,
@@ -212,10 +221,12 @@ export function eventRoutes(app: FastifyInstance, pool: pg.Pool, today: () => st
         next.deposit_cents,
         next.deposit_paid_on,
         next.rest_cents,
-        next.rest_paid_on,
+        next.due_paid_on,
         next.notes,
         next.status,
         next.status_is_manual,
+        next.address,
+        next.timings,
         id,
       ],
     );

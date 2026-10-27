@@ -42,17 +42,19 @@ const eventFields = {
   depositCents: money('Deposit').default(0),
   depositPaidOn: dateStr.nullable().optional(),
   restCents: money('Rest payment').default(0),
-  restPaidOn: dateStr.nullable().optional(),
+  duePaidOn: dateStr.nullable().optional(),
   status: z.enum(['outstanding', 'done']).optional(),
   notes: z.string().trim().max(2000, 'Notes must be 2000 characters or fewer.').default(''),
+  address: z.string().trim().max(500, 'Address must be 500 characters or fewer.').nullable().optional(),
+  timings: z.string().trim().max(200, 'Timings must be 200 characters or fewer.').nullable().optional(),
 };
 
-function requirePaidOnWhenPositive(v: { depositCents?: number; depositPaidOn?: string | null; restCents?: number; restPaidOn?: string | null }, ctx: z.RefinementCtx) {
+function requirePaidOnWhenPositive(v: { depositCents?: number; depositPaidOn?: string | null; restCents?: number; duePaidOn?: string | null }, ctx: z.RefinementCtx) {
   if ((v.depositCents ?? 0) > 0 && !v.depositPaidOn) {
     ctx.addIssue({ code: 'custom', path: ['depositPaidOn'], message: 'Deposit paid date is required when a deposit amount is set.' });
   }
-  if ((v.restCents ?? 0) > 0 && !v.restPaidOn) {
-    ctx.addIssue({ code: 'custom', path: ['restPaidOn'], message: 'Rest paid date is required when a rest amount is set.' });
+  if ((v.restCents ?? 0) > 0 && !v.duePaidOn) {
+    ctx.addIssue({ code: 'custom', path: ['duePaidOn'], message: 'Due paid date is required when a rest amount is set.' });
   }
 }
 
@@ -70,17 +72,19 @@ export const eventUpdateBody = z
     depositCents: money('Deposit').optional(),
     depositPaidOn: eventFields.depositPaidOn,
     restCents: money('Rest payment').optional(),
-    restPaidOn: eventFields.restPaidOn,
+    duePaidOn: eventFields.duePaidOn,
     status: eventFields.status,
     resetStatusToAutomatic: z.boolean().optional(),
     notes: z.string().trim().max(2000, 'Notes must be 2000 characters or fewer.').optional(),
+    address: eventFields.address,
+    timings: eventFields.timings,
   })
   .superRefine((v, ctx) => {
     if (v.depositCents !== undefined && v.depositCents > 0 && !v.depositPaidOn) {
       ctx.addIssue({ code: 'custom', path: ['depositPaidOn'], message: 'Deposit paid date is required when a deposit amount is set.' });
     }
-    if (v.restCents !== undefined && v.restCents > 0 && !v.restPaidOn) {
-      ctx.addIssue({ code: 'custom', path: ['restPaidOn'], message: 'Rest paid date is required when a rest amount is set.' });
+    if (v.restCents !== undefined && v.restCents > 0 && !v.duePaidOn) {
+      ctx.addIssue({ code: 'custom', path: ['duePaidOn'], message: 'Due paid date is required when a rest amount is set.' });
     }
   });
 

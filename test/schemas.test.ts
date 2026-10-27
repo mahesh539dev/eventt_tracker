@@ -13,7 +13,7 @@ describe('eventCreateBody', () => {
     depositCents: 10000,
     depositPaidOn: '2026-10-01',
     restCents: 0,
-    restPaidOn: null,
+    duePaidOn: null,
     notes: '',
   };
 
@@ -34,8 +34,8 @@ describe('eventCreateBody', () => {
     expect(() => eventCreateBody.parse({ ...valid, depositCents: 10000, depositPaidOn: null })).toThrow();
   });
 
-  it('rejects a rest amount with no rest paid-on date', () => {
-    expect(() => eventCreateBody.parse({ ...valid, restCents: 5000, restPaidOn: null })).toThrow();
+  it('rejects a rest amount with no due paid-on date', () => {
+    expect(() => eventCreateBody.parse({ ...valid, restCents: 5000, duePaidOn: null })).toThrow();
   });
 
   it('rejects an invalid decorStyle', () => {
