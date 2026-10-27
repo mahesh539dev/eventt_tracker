@@ -126,7 +126,7 @@ describe('reports route', () => {
       depositCents: 20000,
       depositPaidOn: '2026-09-01',
       restCents: 30000,
-      restPaidOn: '2026-09-15',
+      duePaidOn: '2026-09-15',
     });
 
     const res = await app.inject({ method: 'GET', url: '/api/reports?month=2026-10', headers: { cookie: authCookie } });
