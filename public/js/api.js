@@ -51,3 +51,7 @@ export const getReport = (query) => {
   const params = new URLSearchParams(query);
   return request('GET', `/api/reports?${params.toString()}`);
 };
+
+export const listPhotos = (eventId) => request('GET', `/api/events/${eventId}/photos`);
+export const uploadPhoto = (eventId, data) => request('POST', `/api/events/${eventId}/photos`, data);
+export const deletePhoto = (photoId) => request('DELETE', `/api/photos/${photoId}`);
