@@ -671,8 +671,23 @@ button[type="submit"],
 }
 .breakdown-row-name {
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: 1rem;
   text-transform: capitalize;
+}
+.breakdown-profit-val {
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.breakdown-profit-val.pos { color: var(--ok-fg); }
+.breakdown-profit-val.neg { color: var(--danger); }
+.breakdown-profit-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-top: 1px;
 }
 .breakdown-cols {
   display: flex;
