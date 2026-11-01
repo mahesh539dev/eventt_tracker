@@ -55,7 +55,7 @@ export async function renderReportView(container) {
         <li class="breakdown-row">
           <div class="breakdown-row-head">
             <span class="breakdown-row-name">${esc(k)}</span>
-            <div style="text-align:right">
+            <div class="breakdown-profit">
               <div class="breakdown-profit-val ${b.profitCents >= 0 ? 'pos' : 'neg'}">${formatCents(b.profitCents)}</div>
               <div class="breakdown-profit-label">Profit</div>
             </div>
