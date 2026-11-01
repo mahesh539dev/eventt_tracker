@@ -681,6 +681,11 @@ button[type="submit"],
   white-space: nowrap;
   padding-top: 2px;
 }
+.breakdown-profit {
+  flex-shrink: 0;
+  text-align: right;
+  margin-left: auto;
+}
 .breakdown-profit-val {
   font-size: 1.1rem;
   font-weight: 800;
