@@ -101,7 +101,6 @@ export async function renderEventList(container) {
       </div>
     </div>
     <div id="list"></div>
-    <button class="fab" id="new-event" title="New event">+</button>
   `;
 
   async function load() {
@@ -169,7 +168,6 @@ export async function renderEventList(container) {
     });
   }
 
-  qs('#new-event', container).addEventListener('click', () => renderEventForm(container));
   qs('#search', container).addEventListener('input', load);
   qs('#filter-status', container).addEventListener('change', load);
 
