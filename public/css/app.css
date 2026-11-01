@@ -666,13 +666,20 @@ button[type="submit"],
 .breakdown-row-head {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 6px;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 8px;
 }
 .breakdown-row-name {
+  flex: 1;
+  min-width: 0;
   font-weight: 700;
   font-size: 1rem;
   text-transform: capitalize;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-top: 2px;
 }
 .breakdown-profit-val {
   font-size: 1.1rem;
