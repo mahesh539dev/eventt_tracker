@@ -118,6 +118,7 @@ export const globalExpenseBody = z.object({
   category: z.enum(GLOBAL_EXPENSE_CATEGORIES, { error: 'Pick a category.' }),
   note: z.string().trim().max(200, 'Note must be 200 characters or fewer.').default(''),
   spentOn: dateStr,
+  eventId: z.uuid({ error: 'Invalid event id.' }).nullable().optional(),
 });
 
 export const reportQuery = z
