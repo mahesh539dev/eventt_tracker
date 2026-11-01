@@ -1,5 +1,6 @@
 import { checkAuth, login, logout } from './api.js';
 import { qs, toast } from './ui.js';
+import { renderEventForm } from './views/eventForm.js';
 import { renderEventList } from './views/eventList.js';
 import { renderGlobalExpensesView } from './views/globalExpensesView.js';
 import { renderReportView } from './views/reportView.js';
@@ -28,6 +29,7 @@ function renderShell() {
   const app = qs('#app');
   app.innerHTML = `
     <div id="screen"></div>
+    <button class="fab" id="global-fab" title="New event">+</button>
     <nav class="tab-bar">
       <button class="tab-btn active" data-tab="events">
         <span class="tab-icon">🗓</span>Events
@@ -47,6 +49,11 @@ function renderShell() {
   const screen = qs('#screen');
   document.querySelectorAll('.tab-btn[data-tab]').forEach((btn) => {
     btn.addEventListener('click', () => switchScreen(btn.dataset.tab, screen));
+  });
+
+  qs('#global-fab').addEventListener('click', () => {
+    setActiveTab('events');
+    renderEventForm(screen);
   });
 
   qs('#nav-logout').addEventListener('click', async () => {
