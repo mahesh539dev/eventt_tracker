@@ -13,6 +13,7 @@ import { eventRoutes } from './routes/events.js';
 import { expenseRoutes } from './routes/expenses.js';
 import { healthRoutes } from './routes/health.js';
 import { globalExpenseRoutes } from './routes/globalExpenses.js';
+import { photoRoutes } from './routes/photos.js';
 import { reportRoutes } from './routes/reports.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -72,6 +73,8 @@ export async function buildApp(config: Config, pool: pg.Pool, opts: BuildOptions
 
   app.addHook('onRequest', async (req, reply) => {
     if (req.method !== 'POST' && req.method !== 'PUT' && req.method !== 'PATCH') return;
+    // Photo serving is a GET; photo upload sends JSON (base64). Skip check for binary-serving paths.
+    if (req.url.startsWith('/api/photos/')) return;
     const hasBody = Number(req.headers['content-length'] ?? 0) > 0 || 'transfer-encoding' in req.headers;
     const type = String(req.headers['content-type'] ?? '').toLowerCase();
     if (hasBody && !type.startsWith('application/json')) {
@@ -89,6 +92,7 @@ export async function buildApp(config: Config, pool: pg.Pool, opts: BuildOptions
   eventRoutes(app, pool, today);
   expenseRoutes(app, pool);
   globalExpenseRoutes(app, pool);
+  photoRoutes(app, pool);
   reportRoutes(app, pool, today);
 
   await app.register(fastifyStatic, { root: path.resolve(here, '..', 'public') });

@@ -1,4 +1,4 @@
-import { addExpense, createEvent, deleteEvent, deleteExpense, getEvent, updateEvent, updateExpense } from '../api.js';
+import { addExpense, createEvent, deleteEvent, deleteExpense, getEvent, listPhotos, uploadPhoto, deletePhoto, updateEvent, updateExpense } from '../api.js';
 import { formatCents, parseToCents } from '../money.js';
 import { esc, qs, toast } from '../ui.js';
 import { renderEventList } from './eventList.js';
@@ -81,12 +81,14 @@ export async function renderEventForm(container, eventId) {
     </form>
 
     ${event ? '<div id="expenses" class="card"></div>' : ''}
+    ${event ? '<div id="photos-section"></div>' : ''}
   `;
 
   qs('#back', container).addEventListener('click', () => renderEventList(container));
 
   if (event) {
     renderExpenses(qs('#expenses', container), event);
+    renderPhotos(qs('#photos-section', container), event.id);
 
     qs('#delete-event', container)?.addEventListener('click', async () => {
       if (!confirm('Delete this event? This cannot be undone.')) return;
@@ -218,4 +220,88 @@ function renderExpenses(el, event) {
       toast(err.message);
     }
   });
+}
+
+async function renderPhotos(el, eventId) {
+  el.className = 'card';
+  el.innerHTML = `
+    <h3>📸 Photos</h3>
+    <div id="photo-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:var(--gap)"></div>
+    <label style="display:block;cursor:pointer;margin:0">
+      <input type="file" id="photo-file" accept="image/*" multiple style="display:none" />
+      <div style="display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;border:2px dashed var(--border-strong);border-radius:var(--radius-sm);color:var(--brand);font-weight:600;font-size:0.9rem;transition:background 0.15s ease">
+        📎 Add photos
+      </div>
+    </label>
+    <div id="photo-status" style="font-size:0.82rem;color:var(--text-muted);margin-top:6px;text-align:center"></div>
+  `;
+
+  async function load() {
+    try {
+      const photos = await listPhotos(eventId);
+      const grid = qs('#photo-grid', el);
+      if (!photos.length) {
+        grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:16px 0;color:var(--text-muted);font-size:0.85rem">No photos yet</div>`;
+        return;
+      }
+      grid.innerHTML = photos.map((p) => `
+        <div style="position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;background:var(--surface-2);border:1px solid var(--border)">
+          <img src="/api/photos/${p.id}" alt="${esc(p.filename)}"
+            style="width:100%;height:100%;object-fit:cover;display:block;cursor:pointer" loading="lazy" />
+          <button class="del-photo" data-id="${p.id}"
+            style="position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:50%;padding:0;font-size:0.72rem;line-height:1;background:rgba(0,0,0,0.6);color:#fff;border:none;box-shadow:none;display:flex;align-items:center;justify-content:center;margin:0;cursor:pointer">✕</button>
+        </div>`).join('');
+
+      grid.querySelectorAll('img').forEach((img) => {
+        img.addEventListener('click', () => openLightbox(img.src, img.alt));
+      });
+      grid.querySelectorAll('.del-photo').forEach((btn) => {
+        btn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          if (!confirm('Delete this photo?')) return;
+          try { await deletePhoto(btn.dataset.id); toast('Photo deleted'); load(); }
+          catch (err) { toast(err.message); }
+        });
+      });
+    } catch (err) { toast(err.message); }
+  }
+
+  qs('#photo-file', el).addEventListener('change', async (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    const status = qs('#photo-status', el);
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      status.textContent = `Uploading ${i + 1} of ${files.length}…`;
+      try {
+        const dataBase64 = await toBase64(file);
+        await uploadPhoto(eventId, { filename: file.name, mimeType: file.type, dataBase64 });
+      } catch (err) { toast(`${file.name}: ${err.message}`); }
+    }
+    status.textContent = '';
+    e.target.value = '';
+    load();
+  });
+
+  await load();
+}
+
+function toBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function openLightbox(src, alt) {
+  const lb = document.createElement('div');
+  lb.style.cssText = 'position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.92);display:flex;align-items:center;justify-content:center;padding:16px';
+  lb.innerHTML = `
+    <img src="${src}" alt="${esc(alt)}" style="max-width:100%;max-height:90dvh;border-radius:12px;object-fit:contain" />
+    <button style="position:absolute;top:16px;right:16px;background:rgba(255,255,255,0.15);color:#fff;border:none;border-radius:50%;width:44px;height:44px;font-size:1.3rem;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;margin:0;box-shadow:none">✕</button>
+  `;
+  lb.addEventListener('click', (e) => { if (e.target === lb || e.target.tagName === 'BUTTON') lb.remove(); });
+  document.body.appendChild(lb);
 }
