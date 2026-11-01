@@ -55,7 +55,10 @@ export async function renderReportView(container) {
         <li class="breakdown-row">
           <div class="breakdown-row-head">
             <span class="breakdown-row-name">${esc(k)}</span>
-            <span class="pill done" style="font-size:0.7rem">${formatCents(b.profitCents >= 0 ? b.profitCents : b.profitCents)}</span>
+            <div style="text-align:right">
+              <div class="breakdown-profit-val ${b.profitCents >= 0 ? 'pos' : 'neg'}">${formatCents(b.profitCents)}</div>
+              <div class="breakdown-profit-label">Profit</div>
+            </div>
           </div>
           <div class="breakdown-cols">
             <div class="breakdown-col">
@@ -69,10 +72,6 @@ export async function renderReportView(container) {
             <div class="breakdown-col">
               <div class="breakdown-col-label">Expenses</div>
               <div class="breakdown-col-val">${formatCents(b.expensesCents)}</div>
-            </div>
-            <div class="breakdown-col">
-              <div class="breakdown-col-label">Profit</div>
-              <div class="breakdown-col-val ${b.profitCents >= 0 ? 'pos' : 'neg'}">${formatCents(b.profitCents)}</div>
             </div>
           </div>
         </li>`)
