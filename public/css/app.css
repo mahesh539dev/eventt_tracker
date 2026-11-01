@@ -481,7 +481,7 @@ button:active { transform: translateY(1px); }
 button:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 
 button[type="submit"],
-#new-event,
+#new-event:not(.fab),
 #delete-event {
   display: block;
   width: 100%;
