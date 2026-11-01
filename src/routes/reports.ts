@@ -87,11 +87,20 @@ export function reportRoutes(app: FastifyInstance, pool: pg.Pool, today: () => s
       });
     }
 
-    const globalExpensesRes = await pool.query<{ id: string; amount_cents: number; category: string; note: string; spent_on: string }>(
-      `SELECT * FROM global_expenses WHERE spent_on >= $1 AND spent_on <= $2 ORDER BY spent_on DESC`,
+    const globalExpensesRes = await pool.query<{ id: string; amount_cents: number; category: string; note: string; spent_on: string; event_id: string | null; event_customer_name: string | null; event_date: string | null; event_type: string | null }>(
+      `SELECT ge.*, e.customer_name AS event_customer_name, e.event_date AS event_date, e.event_type AS event_type
+       FROM global_expenses ge
+       LEFT JOIN events e ON e.id = ge.event_id
+       WHERE ge.spent_on >= $1 AND ge.spent_on <= $2 ORDER BY ge.spent_on DESC`,
       [from, to],
     );
-    const globalExpenses = globalExpensesRes.rows.map((r) => ({ id: r.id, amountCents: r.amount_cents, category: r.category, note: r.note, spentOn: r.spent_on }));
+    const globalExpenses = globalExpensesRes.rows.map((r) => ({
+      id: r.id, amountCents: r.amount_cents, category: r.category, note: r.note, spentOn: r.spent_on,
+      eventId: r.event_id ?? null,
+      eventName: r.event_customer_name
+        ? `${r.event_customer_name}${r.event_date ? ' · ' + r.event_date : ''}${r.event_type ? ' · ' + r.event_type : ''}`
+        : null,
+    }));
     const globalExpensesCents = globalExpenses.reduce((sum, x) => sum + x.amountCents, 0);
     totals.expensesCents += globalExpensesCents;
     totals.profitCents -= globalExpensesCents;
